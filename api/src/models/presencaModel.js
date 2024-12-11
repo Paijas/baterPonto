@@ -1,9 +1,17 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-async function registrarPresenca(data) {
-  const presenca = await prisma.presenca.create({ data });
-  console.log(presenca);
-}
+const registrarPresenca = async (usuarioId, dataAtual) => {
+  return await prisma.presenca.create({
+    data: {
+      usuarioId,
+      data: dataAtual,
+      entrada: dataAtual,
+      saida: null,
+      almocoSaida: null,
+      almocoVolta: null,
+    },
+  });
+};
 
-module.exports(registrarPresenca)
+module.exports = { registrarPresenca };
