@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const http = require("http");
 
+
 const app = express();
 app.use(express.json());
 
@@ -23,8 +24,9 @@ app.use("/presenca", presencaRoutes);
 const server = http.createServer(app);
 const PORT = process.env.PORT || 3001;
 
+// const cronServices = require("./src/services/cronServices");
+// cronServices.gerarRelatorio();
+
 server.listen(PORT, () => {
-  console.log(
-    `Servidor rodando na porta ${PORT}`
-  );
+  console.log(`Servidor rodando na porta ${PORT}`);
 });

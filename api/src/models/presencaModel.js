@@ -62,10 +62,20 @@ const registrarCheckout = async (registroId, dateAtual, horasTrabalhadas) => {
   });
 };
 
+const ultimasPresencas = async ( quantidade ) =>{
+  return await prisma.presenca.findMany({
+    orderBy:{
+      entrada: 'desc'
+    },
+    take: quantidade,
+  })
+}
+
 module.exports = {
   registrarCheckin,
   registrarCheckout,
   registrarAlmocoSaida,
   registrarAlmocoVolta,
   buscarRegistroDia,
+  ultimasPresencas,
 };
