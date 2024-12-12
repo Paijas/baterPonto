@@ -32,6 +32,7 @@ model Presenca {
   saida           DateTime
   almocoSaida     DateTime
   almocoVolta     DateTime
+  horasTrabalhadasDia String
   usuario         Usuario @relation(fields: [usuarioId], references: [id])
 
   @@index([usuarioId, data]) // Cria um índice para facilitar buscas por usuário e data

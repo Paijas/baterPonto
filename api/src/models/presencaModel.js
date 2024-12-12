@@ -11,7 +11,7 @@ const registrarCheckin = async (usuarioId, horas) => {
   return await prisma.presenca.create({
     data: {
       usuarioId,
-      data: horas,
+      data: horas.setHours(0, 0, 0, 0),
       entrada: horas,
       saida: null,
       almocoSaida: null,
@@ -35,15 +35,15 @@ const registrarAlmocoVolta = async (registroId, horas) => {
     },
   });
 };
-const registrarCheckout = async (registroId, horas) => {
+const registrarCheckout = async (registroId, horas, horasTrabalhadas) => {
   return await prisma.presenca.update({
     where: { id: registroId },
     data: {
       saida: horas,
+      horasTrabalhadasDia: horasTrabalhadas
     },
   });
 };
-
 
 module.exports = {
   registrarCheckin,
