@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "Presenca" ALTER COLUMN "saida" DROP NOT NULL,
+ALTER COLUMN "almocoSaida" DROP NOT NULL,
+ALTER COLUMN "almocoVolta" DROP NOT NULL,
+ALTER COLUMN "horasTrabalhadasDia" DROP NOT NULL;

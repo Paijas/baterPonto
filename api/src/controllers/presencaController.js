@@ -4,8 +4,7 @@ const usuarioModel = require("../models/usuarioModel");
 const registrarCheckin = async (req, res) => {
   const { usuarioId } = req.body;
   const dateAtual = horarioDeBrasilia();
-  //Validaçoes a fazer...
-  //Nao permitir que crie 2 presenças em 1 dia
+
   try {
     const buscarUser = await usuarioModel.buscarUser(usuarioId);
     if (!buscarUser) {
@@ -14,8 +13,9 @@ const registrarCheckin = async (req, res) => {
 
     const presencaDia = await presencaModel.buscarRegistroDia(
       usuarioId,
-      dateAtual.setHours(0, 0, 0, 0)
+      dateAtual
     );
+    console.log(presencaDia)
 
     if (presencaDia) {
       return res
@@ -30,23 +30,30 @@ const registrarCheckin = async (req, res) => {
 
     res.status(200).json({ message: "Check-In Realizado", presenca });
   } catch (error) {
+    console.error(error);
     return res.status(500).json({ message: "Erro ao fazer Check-In", error });
   }
 };
-//Nao registrar se nao tiver checkin
+
 const registrarAlmocoSaida = async (req, res) => {
   const { usuarioId } = req.body;
   const dateAtual = horarioDeBrasilia();
   try {
     const presencaDia = await presencaModel.buscarRegistroDia(
       usuarioId,
-      dateAtual.setHours(0, 0, 0, 0)
+      dateAtual
     );
 
     if (!presencaDia || !presencaDia.entrada) {
       return res
         .status(400)
         .json({ message: "Não foi registrado presença para esse dia" });
+    }
+
+    if(presencaDia.almocoSaida){
+      return res
+        .status(400)
+        .json({ message: "Já foi registrado a saída para almoço para este dia" });
     }
 
     const presenca = await presencaModel.registrarAlmocoSaida(
@@ -56,6 +63,7 @@ const registrarAlmocoSaida = async (req, res) => {
 
     res.status(200).json({ message: "Saida para almoço Realizada", presenca });
   } catch (error) {
+    console.error(error);
     return res.status(500).json({ message: "Erro ao registrar almoço", error });
   }
 };
@@ -66,7 +74,7 @@ const registrarAlmocoVolta = async (req, res) => {
   try {
     const presencaDia = await presencaModel.buscarRegistroDia(
       usuarioId,
-      dateAtual.setHours(0, 0, 0, 0)
+      dateAtual
     );
     if (!presencaDia || !presencaDia.entrada) {
       return res
@@ -80,6 +88,12 @@ const registrarAlmocoVolta = async (req, res) => {
         .json({ message: "Não foi registrado saida para almoço" });
     }
 
+    if(presencaDia.almocoVolta){
+      return res
+        .status(400)
+        .json({ message: "Já foi registrado a volta do almoço para este dia" });
+    }
+
     const presenca = await presencaModel.registrarAlmocoVolta(
       presencaDia.id,
       dateAtual
@@ -87,6 +101,7 @@ const registrarAlmocoVolta = async (req, res) => {
 
     res.status(200).json({ message: "Volta do almoço Realizada", presenca });
   } catch (error) {
+    console.error(error);
     return res
       .status(500)
       .json({ message: "Erro ao registrar volta do almoço", error });
@@ -99,7 +114,7 @@ const registrarCheckout = async (req, res) => {
   try {
     const presencaDia = await presencaModel.buscarRegistroDia(
       usuarioId,
-      dateAtual.setHours(0, 0, 0, 0)
+      dateAtual
     );
 
     if (!presencaDia || !presencaDia.entrada) {
@@ -108,28 +123,36 @@ const registrarCheckout = async (req, res) => {
         .json({ message: "Não foi registrado presença para esse dia" });
     }
 
-    if (!presencaDia.almocoSaida || presencaDia.almocoVolta) {
+    if (!presencaDia.almocoSaida || !presencaDia.almocoVolta) {
       return res
         .status(400)
         .json({ message: "Não foram registrados horarios de almoço" });
     }
+    
+    if(presencaDia.saida){
+      return res
+        .status(400)
+        .json({ message: "Já foi registrado checkout para este dia" });
+    }
 
+    // Retorna exemplo: 8:13
     const horasTotais = calcularHorasTrabalhadas(
       presencaDia.entrada,
       presencaDia.almocoSaida,
       presencaDia.almocoVolta,
-      presencaDia.saida
+      dateAtual
     );
 
     const presenca = await presencaModel.registrarCheckout(
       presencaDia.id,
       dateAtual,
-      horasTotais
+      `${horasTotais.horas}:${horasTotais.minutos}`
     );
 
     res.status(200).json({ message: "Checkout Realizado", presenca });
 
   } catch (error) {
+    console.error(error);
     return res
       .status(500)
       .json({ message: "Erro ao registrar checkout", error });

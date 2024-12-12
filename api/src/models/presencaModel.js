@@ -1,46 +1,63 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-const buscarRegistroDia = async (usuarioId, data) => {
+const buscarRegistroDia = async (usuarioId, dateAtual) => {
+  // Ajusta as horas de dateAtual para o final do dia (23:59:59.999)
+  const dataFim = new Date(dateAtual);
+  dataFim.setHours(23, 59, 59, 999);
+  
+  // A conversão para UTC é importante para garantir que estamos comparando datas no mesmo fuso horário
+  const dateAtualUtc = new Date(Date.UTC(dateAtual.getFullYear(), dateAtual.getMonth(), dateAtual.getDate(), 0, 0, 0, 0));
+  const dataFimUtc = new Date(Date.UTC(dataFim.getFullYear(), dataFim.getMonth(), dataFim.getDate(), 23, 59, 59, 999));
+  // console.log("Date Atual UTC:", dateAtualUtc);
+  // console.log("Data Fim UTC:", dataFimUtc);
+
   return await prisma.presenca.findFirst({
-    where: { usuarioId: usuarioId, data: data },
+    where: {
+      usuarioId: usuarioId,
+      data: {
+        gte: dateAtualUtc,
+        lte: dataFimUtc,
+      },
+    },
   });
 };
 
-const registrarCheckin = async (usuarioId, horas) => {
+const registrarCheckin = async (usuarioId, dateAtual) => {
   return await prisma.presenca.create({
     data: {
       usuarioId,
-      data: horas.setHours(0, 0, 0, 0),
-      entrada: horas,
+      data: dateAtual,
+      entrada: dateAtual,
       saida: null,
       almocoSaida: null,
       almocoVolta: null,
+      horasTrabalhadasDia: null,
     },
   });
 };
-const registrarAlmocoSaida = async (registroId, horas) => {
+const registrarAlmocoSaida = async (registroId, dateAtual) => {
   return await prisma.presenca.update({
     where: { id: registroId },
     data: {
-      almocoSaida: horas,
+      almocoSaida: dateAtual,
     },
   });
 };
-const registrarAlmocoVolta = async (registroId, horas) => {
+const registrarAlmocoVolta = async (registroId, dateAtual) => {
   return await prisma.presenca.update({
     where: { id: registroId },
     data: {
-      almocoVolta: horas,
+      almocoVolta: dateAtual,
     },
   });
 };
-const registrarCheckout = async (registroId, horas, horasTrabalhadas) => {
+const registrarCheckout = async (registroId, dateAtual, horasTrabalhadas) => {
   return await prisma.presenca.update({
     where: { id: registroId },
     data: {
-      saida: horas,
-      horasTrabalhadasDia: horasTrabalhadas
+      saida: dateAtual,
+      horasTrabalhadasDia: horasTrabalhadas,
     },
   });
 };

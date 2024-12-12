@@ -82,6 +82,7 @@ const calcularHorasTrabalhadas = (chegada, almoco, voltaAlmoco, saida) => {
   return { horas: totalHoras, minutos: totalMinutos };
 };
 
+
 // Exemplo de uso com inputs no formato Date
 const chegada = new Date("2024-12-12T08:00:00"); // Chegada: 08:00
 const almoco = new Date("2024-12-12T12:00:00"); // Almoço: 12:00
@@ -93,3 +94,35 @@ const resultado = calcularHorasTrabalhadas(chegada, almoco, voltaAlmoco, saida);
 
 // Exibir o resultado
 console.log(`${resultado.horas} horas e ${resultado.minutos} minutos`);
+
+
+
+
+
+
+
+
+const horarioDeBrasilia = () => {
+  const hoje = new Date();
+  const fusoBrasilia = hoje.getHours() - 3;
+  hoje.setHours(
+    fusoBrasilia,
+    hoje.getMinutes(),
+    hoje.getSeconds(),
+    hoje.getMilliseconds()
+  );
+
+  return hoje;
+};
+
+
+const data = horarioDeBrasilia() // Data atual no fuso horário local
+console.log("Data atual:", data);
+
+// Criar uma nova instância de dataFim, começando com data
+const dataFim = new Date(data);
+
+// Ajustar o final do dia no fuso horário local (23:59:59.999)
+dataFim.setHours(23, 59, 59, 999);
+
+console.log("Data Fim:", dataFim);
