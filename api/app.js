@@ -24,8 +24,8 @@ app.use("/presenca", presencaRoutes);
 const server = http.createServer(app);
 const PORT = process.env.PORT || 3001;
 
-// const cronServices = require("./src/services/cronServices");
-// cronServices.gerarRelatorio();
+const cronServices = require("./src/services/cronServices");
+cronServices.gerarRelatorio();
 
 server.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);

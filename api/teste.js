@@ -82,7 +82,6 @@ const calcularHorasTrabalhadas = (chegada, almoco, voltaAlmoco, saida) => {
   return { horas: totalHoras, minutos: totalMinutos };
 };
 
-
 // Exemplo de uso com inputs no formato Date
 const chegada = new Date("2024-12-12T08:00:00"); // Chegada: 08:00
 const almoco = new Date("2024-12-12T12:00:00"); // Almoço: 12:00
@@ -94,13 +93,6 @@ const resultado = calcularHorasTrabalhadas(chegada, almoco, voltaAlmoco, saida);
 
 // Exibir o resultado
 console.log(`${resultado.horas} horas e ${resultado.minutos} minutos`);
-
-
-
-
-
-
-
 
 const horarioDeBrasilia = () => {
   const hoje = new Date();
@@ -115,8 +107,7 @@ const horarioDeBrasilia = () => {
   return hoje;
 };
 
-
-const data = horarioDeBrasilia() // Data atual no fuso horário local
+const data = horarioDeBrasilia(); // Data atual no fuso horário local
 console.log("Data atual:", data);
 
 // Criar uma nova instância de dataFim, começando com data
@@ -126,3 +117,23 @@ const dataFim = new Date(data);
 dataFim.setHours(23, 59, 59, 999);
 
 console.log("Data Fim:", dataFim);
+
+const agora = new Date();
+const ano = agora.getFullYear();
+const mes = agora.getMonth() + 1; // Janeiro = 0, por isso +1
+const dia = agora.getDate();
+//'2024-12'
+const ultimoDia = new Date(ano, mes, 0).getDate();
+console.log(ultimoDia)
+console.log(`${ano}-${mes}`)
+
+function validarFormatoAnoMes(valor) {
+  const regex = /^\d{4}-(0[1-9]|1[0-2])$/;
+  return regex.test(valor);
+}
+
+// Exemplos de uso
+console.log(validarFormatoAnoMes("2024-12")); // true
+console.log(validarFormatoAnoMes("2024-13")); // false (mês inválido)
+console.log(validarFormatoAnoMes("2024-02"));  // false (mês não tem dois dígitos)
+console.log(validarFormatoAnoMes("24-12"));   // false (ano com menos de 4 dígitos)

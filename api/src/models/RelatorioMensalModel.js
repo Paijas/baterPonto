@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 //   });
 // };
 
-const gerarRelatorioMensalUsuario = async (usuarioId, mes) => {
+const gerarRelatorioMesUser = async (usuarioId, mes) => {
   // Determina o intervalo de datas para o mês
   // mes = '2024-12'
   const dataInicio = new Date(`${mes}-01T00:00:00.000Z`);
@@ -76,14 +76,17 @@ const gerarRelatorioMensalUsuario = async (usuarioId, mes) => {
   return relatorio;
 };
 
-const gerarRelatoriosMensaisParaTodosUsuarios = async (mes) => {
+const gerarRelatorioMesGeral = async (mes) => {
   const dataInicio = new Date(`${mes}-01T00:00:00.000Z`);
   const dataFim = new Date(dataInicio);
   dataFim.setMonth(dataFim.getMonth() + 1);
 
   const usuarios = await prisma.usuario.findMany();
+  const relatorios = []; // Lista para armazenar os relatórios gerados ou atualizados
 
   for (const usuario of usuarios) {
+    console.log(`Gerando relatório para o usuário: ${usuario.nome} (ID: ${usuario.id})`);
+
     const presencas = await prisma.presenca.findMany({
       where: {
         usuarioId: usuario.id,
@@ -93,6 +96,7 @@ const gerarRelatoriosMensaisParaTodosUsuarios = async (mes) => {
         },
       },
     });
+
     let horasTotais = 0;
 
     presencas.forEach((presenca) => {
@@ -120,8 +124,9 @@ const gerarRelatoriosMensaisParaTodosUsuarios = async (mes) => {
       },
     });
 
+    let relatorio;
     if (relatorioExistente) {
-      await prisma.relatorioMensal.update({
+      relatorio = await prisma.relatorioMensal.update({
         where: {
           id: relatorioExistente.id,
         },
@@ -129,16 +134,25 @@ const gerarRelatoriosMensaisParaTodosUsuarios = async (mes) => {
           horasTrabalhadas: horasTotais,
         },
       });
+      console.log(`Relatório atualizado para o usuário: ${usuario.nome}`);
     } else {
-      await prisma.relatorioMensal.create({
+      relatorio = await prisma.relatorioMensal.create({
         data: {
           usuarioId: usuario.id,
           mes,
           horasTrabalhadas: horasTotais,
         },
       });
+      console.log(`Relatório criado para o usuário: ${usuario.nome}`);
     }
+
+    relatorios.push(relatorio); // Adiciona o relatório à lista
   }
+
+  console.log('Todos os relatórios foram processados.');
+  return relatorios; // Retorna a lista de relatórios
 };
 
-module.exports = { gerarRelatorioMensalUsuario, gerarRelatoriosMensaisParaTodosUsuarios };
+
+
+module.exports = { gerarRelatorioMesUser, gerarRelatorioMesGeral };

@@ -183,8 +183,16 @@ const ultimasPresencas = async (req, res) => {
 
 const gerarRelatorioMesUser = async (req, res) => {
   const { usuarioId, mes } = req.body;
+  const regex = /^\d{4}-(0[1-9]|1[0-2])$/;
   try {
-    const relatorio = await RelatorioMensalModel.gerarRelatorioMensal(
+    if(!usuarioId){
+      return res.status(400).json({ message: "Insira um usuário" });
+    }
+
+    if (!mes || !regex.test(mes)) {
+      return res.status(400).json({ message: "Insira uma data válida" });
+    }
+    const relatorio = await RelatorioMensalModel.gerarRelatorioMesUser(
       usuarioId,
       mes
     );
@@ -197,8 +205,12 @@ const gerarRelatorioMesUser = async (req, res) => {
 
 const gerarRelatorioMesGeral = async (req, res) => {
   const { mes } = req.body;
+  const regex = /^\d{4}-(0[1-9]|1[0-2])$/;
   try {
-    const relatorio = await RelatorioMensalModel.gerarRelatorioMensal(mes);
+    if (!mes || !regex.test(mes)) {
+      return res.status(400).json({ message: "Insira uma data válida" });
+    }
+    const relatorio = await RelatorioMensalModel.gerarRelatorioMesGeral(mes);
     res.status(200).json(relatorio);
   } catch (error) {
     console.error(error);
