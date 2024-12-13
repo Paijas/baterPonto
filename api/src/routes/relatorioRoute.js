@@ -1,9 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const relatorioController = require("../controllers/relatorioController");
+const {middlewareAuth} = require("../middleware/auth");
 
-router.get("/user", relatorioController.getRelatorioUser);
-router.post("/gerarRelatorio", relatorioController.gerarRelatorioMesUser);
-router.post("/gerarRelatorioGeral", relatorioController.gerarRelatorioMesGeral);
+
+router.post("/gerarRelatorio", middlewareAuth(),relatorioController.gerarRelatorioMesUser);
+router.post("/gerarRelatorioGeral", middlewareAuth(), relatorioController.gerarRelatorioMesGeral);
+
+router.get("/user", middlewareAuth(), relatorioController.getRelatorioUser);
 
 module.exports = router;

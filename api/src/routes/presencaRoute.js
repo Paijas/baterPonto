@@ -2,11 +2,13 @@ const express = require("express");
 const router = express.Router();
 const presencaController = require("../controllers/presencaController");
 
-router.get("/ultimaspresencas/:quantidade", presencaController.ultimasPresencas);
+const {middlewareAuth} = require("../middleware/auth");
 
-router.post("/checkin/:id", presencaController.registrarCheckin);
-router.post("/checkout/:id", presencaController.registrarCheckout);
-router.post("/almoco/:id", presencaController.registrarAlmocoSaida);
-router.post("/almocovolta/:id", presencaController.registrarAlmocoVolta);
+router.get("/ultimaspresencas/:quantidade",middlewareAuth("admin"), presencaController.ultimasPresencas);
+
+router.post("/checkin/:id",middlewareAuth(), presencaController.registrarCheckin);
+router.post("/checkout/:id",middlewareAuth(), presencaController.registrarCheckout);
+router.post("/almoco/:id",middlewareAuth(), presencaController.registrarAlmocoSaida);
+router.post("/almocovolta/:id",middlewareAuth(), presencaController.registrarAlmocoVolta);
 
 module.exports = router;

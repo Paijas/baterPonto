@@ -162,6 +162,13 @@ const getRelatorioUser = async (usuarioId, mes) => {
         lt: dataFim,
       },
     },
+    include:{
+      usuario:{
+        select:{
+          nome: true,
+        },
+      },
+    },
   });
 
   return presencas;

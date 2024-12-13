@@ -1,6 +1,5 @@
 const presencaModel = require("../models/presencaModel");
 const usuarioModel = require("../models/usuarioModel");
-const RelatorioMensalModel = require("../models/RelatorioMensalModel");
 
 const registrarCheckin = async (req, res) => {
   const usuarioId = parseInt(req.params.id);
