@@ -6,133 +6,110 @@ const registrarCheckin = async (req, res) => {
   const dateAtual = horarioDeBrasilia();
 
   try {
+    if (isNaN(usuarioId)) {
+      return res.status(400).json({ message: "ID do usuário inválido" });
+    }
+
     const buscarUser = await usuarioModel.buscarUser(usuarioId);
     if (!buscarUser) {
-      return res.status(400).json({ message: "Usuário não encontrado" });
+      return res.status(404).json({ message: "Usuário não encontrado" });
     }
 
-    const presencaDia = await presencaModel.buscarRegistroDia(
-      usuarioId,
-      dateAtual
-    );
-
+    const presencaDia = await presencaModel.buscarRegistroDia(usuarioId, dateAtual);
     if (presencaDia) {
-      return res
-        .status(400)
-        .json({ message: "Já foi feito registro para esse dia" });
+      return res.status(409).json({ message: "Já foi feito registro para esse dia" });
     }
 
-    const presenca = await presencaModel.registrarCheckin(
-      buscarUser.id,
-      dateAtual
-    );
-
-    res.status(200).json({ message: "Check-In Realizado", presenca });
+    const presenca = await presencaModel.registrarCheckin(buscarUser.id, dateAtual);
+    return res.status(201).json({ message: "Check-In realizado com sucesso", presenca });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Erro ao fazer Check-In", error });
+    console.error("Erro ao registrar Check-In:", error);
+    return res.status(500).json({ message: "Erro ao fazer Check-In", error: error.message });
   }
 };
 
 const registrarAlmocoSaida = async (req, res) => {
   const usuarioId = parseInt(req.params.id);
   const dateAtual = horarioDeBrasilia();
+
   try {
-    const presencaDia = await presencaModel.buscarRegistroDia(
-      usuarioId,
-      dateAtual
-    );
+    if (isNaN(usuarioId)) {
+      return res.status(400).json({ message: "ID do usuário inválido" });
+    }
+
+    const presencaDia = await presencaModel.buscarRegistroDia(usuarioId, dateAtual);
 
     if (!presencaDia || !presencaDia.entrada) {
-      return res
-        .status(400)
-        .json({ message: "Não foi registrado presença para esse dia" });
+      return res.status(400).json({ message: "Não foi registrado presença para esse dia" });
     }
 
     if (presencaDia.almocoSaida) {
-      return res.status(400).json({
-        message: "Já foi registrado a saída para almoço para este dia",
-      });
+      return res.status(409).json({ message: "Já foi registrado a saída para almoço para este dia" });
     }
 
-    const presenca = await presencaModel.registrarAlmocoSaida(
-      presencaDia.id,
-      dateAtual
-    );
+    const presenca = await presencaModel.registrarAlmocoSaida(presencaDia.id, dateAtual);
 
-    res.status(200).json({ message: "Saida para almoço Realizada", presenca });
+    return res.status(200).json({ message: "Saída para almoço realizada", presenca });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Erro ao registrar almoço", error });
+    console.error("Erro ao registrar saída para almoço:", error);
+    return res.status(500).json({ message: "Erro ao registrar almoço", error: error.message });
   }
 };
 
 const registrarAlmocoVolta = async (req, res) => {
   const usuarioId = parseInt(req.params.id);
   const dateAtual = horarioDeBrasilia();
+
   try {
-    const presencaDia = await presencaModel.buscarRegistroDia(
-      usuarioId,
-      dateAtual
-    );
+    if (isNaN(usuarioId)) {
+      return res.status(400).json({ message: "ID do usuário inválido" });
+    }
+
+    const presencaDia = await presencaModel.buscarRegistroDia(usuarioId, dateAtual);
 
     if (!presencaDia || !presencaDia.entrada) {
-      return res
-        .status(400)
-        .json({ message: "Não foi registrado presença para esse dia" });
+      return res.status(400).json({ message: "Não foi registrado presença para esse dia" });
     }
 
     if (!presencaDia.almocoSaida) {
-      return res
-        .status(400)
-        .json({ message: "Não foi registrado saida para almoço" });
+      return res.status(400).json({ message: "Não foi registrado saída para almoço" });
     }
 
     if (presencaDia.almocoVolta) {
-      return res
-        .status(400)
-        .json({ message: "Já foi registrado a volta do almoço para este dia" });
+      return res.status(409).json({ message: "Já foi registrado a volta do almoço para este dia" });
     }
 
-    const presenca = await presencaModel.registrarAlmocoVolta(
-      presencaDia.id,
-      dateAtual
-    );
+    const presenca = await presencaModel.registrarAlmocoVolta(presencaDia.id, dateAtual);
 
-    res.status(200).json({ message: "Volta do almoço Realizada", presenca });
+    return res.status(200).json({ message: "Volta do almoço realizada", presenca });
   } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ message: "Erro ao registrar volta do almoço", error });
+    console.error("Erro ao registrar volta do almoço:", error);
+    return res.status(500).json({ message: "Erro ao registrar volta do almoço", error: error.message });
   }
 };
+
 
 const registrarCheckout = async (req, res) => {
   const usuarioId = parseInt(req.params.id);
   const dateAtual = horarioDeBrasilia();
+
   try {
-    const presencaDia = await presencaModel.buscarRegistroDia(
-      usuarioId,
-      dateAtual
-    );
+    if (isNaN(usuarioId)) {
+      return res.status(400).json({ message: "ID do usuário inválido" });
+    }
+
+    const presencaDia = await presencaModel.buscarRegistroDia(usuarioId, dateAtual);
 
     if (!presencaDia || !presencaDia.entrada) {
-      return res
-        .status(400)
-        .json({ message: "Não foi registrado presença para esse dia" });
+      return res.status(400).json({ message: "Não foi registrado presença para esse dia" });
     }
 
     if (!presencaDia.almocoSaida || !presencaDia.almocoVolta) {
-      return res
-        .status(400)
-        .json({ message: "Não foram registrados horarios de almoço" });
+      return res.status(400).json({ message: "Não foram registrados horários de almoço" });
     }
 
     if (presencaDia.saida) {
-      return res
-        .status(400)
-        .json({ message: "Já foi registrado checkout para este dia" });
+      return res.status(409).json({ message: "Já foi registrado checkout para este dia" });
     }
 
     const horasTotais = calcularHorasTrabalhadas(
@@ -148,35 +125,33 @@ const registrarCheckout = async (req, res) => {
       `${horasTotais.horas}:${horasTotais.minutos}`
     );
 
-    res.status(200).json({ message: "Checkout Realizado", presenca });
+    return res.status(200).json({ message: "Checkout realizado", presenca });
   } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ message: "Erro ao registrar checkout", error });
+    console.error("Erro ao registrar checkout:", error);
+    return res.status(500).json({ message: "Erro ao registrar checkout", error: error.message });
   }
 };
 
 const ultimasPresencas = async (req, res) => {
   const quantidade = parseInt(req.params.quantidade);
+
   try {
     if (quantidade > 100) {
       return res.status(400).json({
-        message:
-          "quantidade inserida maior que a capacidade permitida para pesquisa",
+        message: "Quantidade inserida maior que a capacidade permitida para pesquisa",
       });
     }
 
     const resposta = await presencaModel.ultimasPresencas(quantidade);
 
     if (!resposta || resposta.length === 0) {
-      return res.status(400).json({ message: "Nenhuma presença registrada" });
+      return res.status(404).json({ message: "Nenhuma presença registrada" });
     }
 
-    res.status(200).json(resposta);
+    return res.status(200).json(resposta);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Erro ao buscar presenças", error });
+    console.error("Erro ao buscar presenças:", error);
+    return res.status(500).json({ message: "Erro ao buscar presenças", error: error.message });
   }
 };
 
