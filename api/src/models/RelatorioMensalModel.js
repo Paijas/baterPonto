@@ -1,12 +1,6 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-// const existeRelatorio = async (usuarioId, mes) => {
-//   return await prisma.relatorioMensal.findFirst({
-//     where: { usuarioId: usuarioId, mes: mes },
-//   });
-// };
-
 const gerarRelatorioMesUser = async (usuarioId, mes) => {
   // Determina o intervalo de datas para o mês
   // mes = '2024-12'
@@ -82,10 +76,12 @@ const gerarRelatorioMesGeral = async (mes) => {
   dataFim.setMonth(dataFim.getMonth() + 1);
 
   const usuarios = await prisma.usuario.findMany();
-  const relatorios = []; // Lista para armazenar os relatórios gerados ou atualizados
+  const relatorios = [];
 
   for (const usuario of usuarios) {
-    console.log(`Gerando relatório para o usuário: ${usuario.nome} (ID: ${usuario.id})`);
+    console.log(
+      `Gerando relatório para o usuário: ${usuario.nome} (ID: ${usuario.id})`
+    );
 
     const presencas = await prisma.presenca.findMany({
       where: {
@@ -149,10 +145,26 @@ const gerarRelatorioMesGeral = async (mes) => {
     relatorios.push(relatorio); // Adiciona o relatório à lista
   }
 
-  console.log('Todos os relatórios foram processados.');
-  return relatorios; // Retorna a lista de relatórios
+  console.log("Todos os relatórios foram processados.");
+  return relatorios;
 };
 
+const getRelatorioUser = async (usuarioId, mes) => {
+  const dataInicio = new Date(`${mes}-01T00:00:00.000Z`);
+  const dataFim = new Date(dataInicio);
+  dataFim.setMonth(dataFim.getMonth() + 1);
 
+  const presencas = await prisma.presenca.findMany({
+    where: {
+      usuarioId,
+      data: {
+        gte: dataInicio,
+        lt: dataFim,
+      },
+    },
+  });
 
-module.exports = { gerarRelatorioMesUser, gerarRelatorioMesGeral };
+  return presencas;
+};
+
+module.exports = { gerarRelatorioMesUser, gerarRelatorioMesGeral, getRelatorioUser };

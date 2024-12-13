@@ -9,7 +9,4 @@ router.post("/checkout/:id", presencaController.registrarCheckout);
 router.post("/almoco/:id", presencaController.registrarAlmocoSaida);
 router.post("/almocovolta/:id", presencaController.registrarAlmocoVolta);
 
-router.post("/gerarRelatorio", presencaController.gerarRelatorioMesUser);
-router.post("/gerarRelatorioGeral", presencaController.gerarRelatorioMesGeral);
-
 module.exports = router;

@@ -9,8 +9,6 @@ const buscarRegistroDia = async (usuarioId, dateAtual) => {
   // A conversão para UTC é importante para garantir que estamos comparando datas no mesmo fuso horário
   const dateAtualUtc = new Date(Date.UTC(dateAtual.getFullYear(), dateAtual.getMonth(), dateAtual.getDate(), 0, 0, 0, 0));
   const dataFimUtc = new Date(Date.UTC(dataFim.getFullYear(), dataFim.getMonth(), dataFim.getDate(), 23, 59, 59, 999));
-  // console.log("Date Atual UTC:", dateAtualUtc);
-  // console.log("Data Fim UTC:", dataFimUtc);
 
   return await prisma.presenca.findFirst({
     where: {
@@ -32,7 +30,7 @@ const registrarCheckin = async (usuarioId, dateAtual) => {
       saida: null,
       almocoSaida: null,
       almocoVolta: null,
-      horasTrabalhadasDia: null,
+      horasTrabalhadasDia: "0:0",
     },
   });
 };
