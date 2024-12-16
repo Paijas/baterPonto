@@ -99,12 +99,7 @@ export default function Home() {
             </Text>
           </Pressable>
 
-          <Pressable
-            onPress={() => setRegistros([null, null, null, null])}
-            className="flex-1 py-4 bg-red-400 rounded-md justify-center items-center"
-          >
-            <Text className="flex text-white font-bold text-1xl">Limpar</Text>
-          </Pressable>
+      
         </View>
 
         <View className="flex w-full mt-6">
