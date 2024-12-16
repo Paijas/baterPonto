@@ -1,10 +1,10 @@
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
-
+import Card from '../components/card'
 export default function Home() {
   const [horario, setHorario] = useState("");
-  const [registros, setRegistros] = useState([null, null, null, null]);
+  const [registros, setRegistros] = useState([null, null]);
   const [isPressed, setIsPressed] = useState(false);
   const [pressDuration, setPressDuration] = useState(0);
   const [buttonColor, setButtonColor] = useState("bg-blue-400");
@@ -35,7 +35,7 @@ export default function Home() {
       setButtonColor("bg-blue-400");
     }
 
-    if (pressDuration >=10) {
+    if (pressDuration >= 10) {
       setButtonColor("bg-blue-600");
     }
 
@@ -55,7 +55,7 @@ export default function Home() {
         if (novosRegistros.every((registro) => registro !== null)) {
           const data = new Date();
           const ano = data.getFullYear();
-          let mes = data.getMonth() + 1; 
+          let mes = data.getMonth() + 1;
           let dia = data.getDate();
 
           if (dia < 10) dd = "0" + dd;
@@ -64,7 +64,7 @@ export default function Home() {
           const dataAtual = dia + "/" + mes + "/" + ano;
 
           setHistorico([...historico, [dataAtual, novosRegistros]]);
-          setRegistros([null, null, null, null]);
+          setRegistros([null, null]);
         }
       } else {
         alert("Todos os pontos já foram registrados!");
@@ -98,22 +98,15 @@ export default function Home() {
               Registrar Ponto
             </Text>
           </Pressable>
-
-      
         </View>
 
         <View className="flex w-full mt-6">
           <Text className="text-slate-400 border-b pb-2 border-slate-200 font-semibold text-3xl mt-4">
             Ultimos Registros
           </Text>
-          <View className="gap-6 mt-4">
-            {historico.map((registro, index) => (
-              <View className="bg-blue-200" key={index}>
-                <Text>{registro[0]}</Text>
-                {registro[1].map((hora, i) => (
-                  <Text key={i}>{hora}</Text>
-                ))}
-              </View>
+          <View className="gap-2 mt-4">
+            {historico.map((registro) => (
+             <Card registro={registro} />
             ))}
           </View>
         </View>
