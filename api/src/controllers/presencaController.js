@@ -1,6 +1,12 @@
 const presencaModel = require("../models/presencaModel");
 const usuarioModel = require("../models/usuarioModel");
 
+// Variaveis de testes para DEV
+// ...............
+const diaAmais = 2;
+const horasAmais = 8;
+const minutosAmais = 19;
+// ...............
 const registrarCheckin = async (req, res) => {
   const usuarioId = parseInt(req.params.id);
   const dateAtual = horarioDeBrasilia();
@@ -15,14 +21,15 @@ const registrarCheckin = async (req, res) => {
       return res.status(404).json({ message: "Usuário não encontrado" });
     }
 
-    const presencaDia = await presencaModel.buscarRegistroDia(
+    const presencaDia = await presencaModel.buscarPresencaDia(
       usuarioId,
       dateAtual
     );
     if (presencaDia) {
-      return res
-        .status(409)
-        .json({ message: "Já foi feito registro para esse dia" });
+      return res.status(409).json({
+        message: "Já foi feito registro para esse dia",
+        presenca: presencaDia,
+      });
     }
 
     const presenca = await presencaModel.registrarCheckin(
@@ -44,12 +51,20 @@ const registrarCheckout = async (req, res) => {
   const usuarioId = parseInt(req.params.id);
   const dateAtual = horarioDeBrasilia();
 
+  // testes
+  dateAtual.setHours(
+    dateAtual.getHours() + horasAmais,
+    dateAtual.getMinutes() + minutosAmais,
+    dateAtual.getSeconds(),
+    dateAtual.getMilliseconds()
+  );
+
   try {
     if (isNaN(usuarioId)) {
       return res.status(400).json({ message: "ID do usuário inválido" });
     }
 
-    const presencaDia = await presencaModel.buscarRegistroDia(
+    const presencaDia = await presencaModel.buscarPresencaDia(
       usuarioId,
       dateAtual
     );
@@ -60,9 +75,10 @@ const registrarCheckout = async (req, res) => {
     }
 
     if (presencaDia.saida) {
-      return res
-        .status(409)
-        .json({ message: "Já foi registrado checkout para este dia" });
+      return res.status(409).json({
+        message: "Já foi registrado checkout para este dia",
+        presenca: presencaDia,
+      });
     }
 
     const horasTotais = calcularHorasTrabalhadas(
@@ -111,6 +127,31 @@ const ultimasPresencas = async (req, res) => {
   }
 };
 
+const getPresencasUserMes = async (req, res) => {
+  const { mes, usuarioId } = req.body;
+
+  const regex = /^\d{4}-(0[1-9]|1[0-2])$/;
+  try {
+    if (!mes || !regex.test(mes)) {
+      return res.status(400).json({ message: "Insira uma data válida" });
+    }
+
+    const buscarUser = await usuarioModel.buscarUser(usuarioId);
+    if (!buscarUser) {
+      return res.status(404).json({ message: "Usuário não encontrado" });
+    }
+    
+    const relatorio = await presencaModel.getPresencasUserMes(
+      parseInt(usuarioId),
+      mes
+    );
+    res.status(200).json(relatorio);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Erro ao gerar relatório", error });
+  }
+};
+
 // Private
 
 const horarioDeBrasilia = () => {
@@ -122,6 +163,8 @@ const horarioDeBrasilia = () => {
     hoje.getSeconds(),
     hoje.getMilliseconds()
   );
+  // testes
+  hoje.setDate(hoje.getDate() + diaAmais);
 
   return hoje;
 };
@@ -145,4 +188,5 @@ module.exports = {
   registrarCheckin,
   registrarCheckout,
   ultimasPresencas,
+  getPresencasUserMes,
 };
