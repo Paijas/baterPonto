@@ -62,7 +62,16 @@ const gerarRelatorioMesUser = async (usuarioId, mes) => {
     });
   }
 
-  return relatorio;
+  const usuario = await prisma.usuario.findUnique({
+    where: {
+      id: usuarioId,
+    },
+    select: {
+      nome: true,
+    },
+  });
+
+  return { ...relatorio, nome: usuario.nome || "Usuário não encontrado" };
 };
 
 const gerarRelatorioMesGeral = async (mes) => {
@@ -72,6 +81,7 @@ const gerarRelatorioMesGeral = async (mes) => {
 
   const usuarios = await prisma.usuario.findMany();
   const relatorios = [];
+  const horaAlmoco = 1; // Define 1 hora de almoço
 
   for (const usuario of usuarios) {
     const presencas = await prisma.presenca.findMany({
@@ -128,39 +138,19 @@ const gerarRelatorioMesGeral = async (mes) => {
       });
     }
 
-    relatorios.push(relatorio);
+    relatorios.push({
+      ...relatorio,
+      nome: usuario.nome,
+    });
   }
 
   return relatorios;
 };
 
-const getRelatorioUser = async (usuarioId, mes) => {
-  const dataInicio = new Date(`${mes}-01T00:00:00.000Z`);
-  const dataFim = new Date(dataInicio);
-  dataFim.setMonth(dataFim.getMonth() + 1);
 
-  const presencas = await prisma.presenca.findMany({
-    where: {
-      usuarioId,
-      data: {
-        gte: dataInicio,
-        lt: dataFim,
-      },
-    },
-    include: {
-      usuario: {
-        select: {
-          nome: true,
-        },
-      },
-    },
-  });
 
-  return presencas;
-};
 
 module.exports = {
   gerarRelatorioMesUser,
   gerarRelatorioMesGeral,
-  getRelatorioUser,
 };
