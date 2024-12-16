@@ -18,7 +18,7 @@ const middlewareAuth =
             .json({ message: "Token inválido ou expirado." });
         }
 
-        if (tipo.length > 0 && !tipo.includes(user.tipo)) {
+        if (tipo.length > 0 && !tipo.includes(user.tipo) && user.tipo !== "admin") {
           return res
             .status(403)
             .json({ message: "Usuário não autorizado para este recurso." });

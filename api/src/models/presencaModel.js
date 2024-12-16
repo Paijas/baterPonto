@@ -28,28 +28,11 @@ const registrarCheckin = async (usuarioId, dateAtual) => {
       data: dateAtual,
       entrada: dateAtual,
       saida: null,
-      almocoSaida: null,
-      almocoVolta: null,
       horasTrabalhadasDia: "0:0",
     },
   });
 };
-const registrarAlmocoSaida = async (registroId, dateAtual) => {
-  return await prisma.presenca.update({
-    where: { id: registroId },
-    data: {
-      almocoSaida: dateAtual,
-    },
-  });
-};
-const registrarAlmocoVolta = async (registroId, dateAtual) => {
-  return await prisma.presenca.update({
-    where: { id: registroId },
-    data: {
-      almocoVolta: dateAtual,
-    },
-  });
-};
+
 const registrarCheckout = async (registroId, dateAtual, horasTrabalhadas) => {
   return await prisma.presenca.update({
     where: { id: registroId },
@@ -72,8 +55,6 @@ const ultimasPresencas = async ( quantidade ) =>{
 module.exports = {
   registrarCheckin,
   registrarCheckout,
-  registrarAlmocoSaida,
-  registrarAlmocoVolta,
   buscarRegistroDia,
   ultimasPresencas,
 };

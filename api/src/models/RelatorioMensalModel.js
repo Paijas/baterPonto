@@ -1,9 +1,9 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
+const horaAlmoco = 1;
+
 const gerarRelatorioMesUser = async (usuarioId, mes) => {
-  // Determina o intervalo de datas para o mês
-  // mes = '2024-12'
   const dataInicio = new Date(`${mes}-01T00:00:00.000Z`);
   const dataFim = new Date(dataInicio);
   dataFim.setMonth(dataFim.getMonth() + 1);
@@ -18,27 +18,21 @@ const gerarRelatorioMesUser = async (usuarioId, mes) => {
     },
   });
 
-  // Calcula o total de horas trabalhadas
   let horasTotais = 0;
 
   presencas.forEach((presenca) => {
     if (presenca.entrada && presenca.saida) {
       const entrada = new Date(presenca.entrada);
       const saida = new Date(presenca.saida);
-
-      // Subtrai horário de almoço, se houver
       let horasTrabalhadas = (saida - entrada) / (1000 * 60 * 60); // Em horas
-      if (presenca.almocoSaida && presenca.almocoVolta) {
-        const almocoSaida = new Date(presenca.almocoSaida);
-        const almocoVolta = new Date(presenca.almocoVolta);
-        horasTrabalhadas -= (almocoVolta - almocoSaida) / (1000 * 60 * 60);
-      }
 
-      // Adiciona ao total
+      // Desconta 1 hora de almoço
+      horasTrabalhadas = Math.max(horasTrabalhadas - horaAlmoco, 0);
+
       horasTotais += horasTrabalhadas;
     }
   });
-  // Arredonda para 2 casas decimais
+
   horasTotais = Math.round(horasTotais * 100) / 100;
 
   const relatorioExistente = await prisma.relatorioMensal.findFirst({
@@ -48,8 +42,8 @@ const gerarRelatorioMesUser = async (usuarioId, mes) => {
     },
   });
 
+  let relatorio;
   if (relatorioExistente) {
-    // Atualiza o relatório existente
     relatorio = await prisma.relatorioMensal.update({
       where: {
         id: relatorioExistente.id,
@@ -67,6 +61,7 @@ const gerarRelatorioMesUser = async (usuarioId, mes) => {
       },
     });
   }
+
   return relatorio;
 };
 
@@ -79,10 +74,6 @@ const gerarRelatorioMesGeral = async (mes) => {
   const relatorios = [];
 
   for (const usuario of usuarios) {
-    console.log(
-      `Gerando relatório para o usuário: ${usuario.nome} (ID: ${usuario.id})`
-    );
-
     const presencas = await prisma.presenca.findMany({
       where: {
         usuarioId: usuario.id,
@@ -99,13 +90,10 @@ const gerarRelatorioMesGeral = async (mes) => {
       if (presenca.entrada && presenca.saida) {
         const entrada = new Date(presenca.entrada);
         const saida = new Date(presenca.saida);
-
         let horasTrabalhadas = (saida - entrada) / (1000 * 60 * 60); // Em horas
-        if (presenca.almocoSaida && presenca.almocoVolta) {
-          const almocoSaida = new Date(presenca.almocoSaida);
-          const almocoVolta = new Date(presenca.almocoVolta);
-          horasTrabalhadas -= (almocoVolta - almocoSaida) / (1000 * 60 * 60);
-        }
+
+        // Desconta 1 hora de almoço
+        horasTrabalhadas = Math.max(horasTrabalhadas - horaAlmoco, 0);
 
         horasTotais += horasTrabalhadas;
       }
@@ -130,7 +118,6 @@ const gerarRelatorioMesGeral = async (mes) => {
           horasTrabalhadas: horasTotais,
         },
       });
-      console.log(`Relatório atualizado para o usuário: ${usuario.nome}`);
     } else {
       relatorio = await prisma.relatorioMensal.create({
         data: {
@@ -139,13 +126,11 @@ const gerarRelatorioMesGeral = async (mes) => {
           horasTrabalhadas: horasTotais,
         },
       });
-      console.log(`Relatório criado para o usuário: ${usuario.nome}`);
     }
 
-    relatorios.push(relatorio); // Adiciona o relatório à lista
+    relatorios.push(relatorio);
   }
 
-  console.log("Todos os relatórios foram processados.");
   return relatorios;
 };
 
@@ -162,9 +147,9 @@ const getRelatorioUser = async (usuarioId, mes) => {
         lt: dataFim,
       },
     },
-    include:{
-      usuario:{
-        select:{
+    include: {
+      usuario: {
+        select: {
           nome: true,
         },
       },
@@ -174,4 +159,8 @@ const getRelatorioUser = async (usuarioId, mes) => {
   return presencas;
 };
 
-module.exports = { gerarRelatorioMesUser, gerarRelatorioMesGeral, getRelatorioUser };
+module.exports = {
+  gerarRelatorioMesUser,
+  gerarRelatorioMesGeral,
+  getRelatorioUser,
+};
