@@ -48,7 +48,7 @@ const criarUsuario = async (req, res) => {
 };
 
 const usuarioLogin = async (req, res) => {
-  const { login, senha } = res.body;
+  const { login, senha } = req.body;
 
   if (!login || !senha) {
     return res.status(400).json({ message: "Usuário ou senha inválidos" });
@@ -72,7 +72,7 @@ const usuarioLogin = async (req, res) => {
       { expiresIn: "24h" }
     );
 
-    res.status(200);
+    res.status(200).json( token );
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Erro ao logar", error });
