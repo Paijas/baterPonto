@@ -88,7 +88,7 @@ const registrarCheckout = async (req, res) => {
     const presenca = await presencaModel.registrarCheckout(
       presencaDia.id,
       dateAtual,
-      `${horasTotais.horas}:${horasTotais.minutos}`
+      horasTotais
     );
 
     return res.status(200).json({ message: "Checkout realizado", presenca });
@@ -173,18 +173,13 @@ const horarioDeBrasilia = () => {
 };
 
 const calcularHorasTrabalhadas = (entrada, saida) => {
-  const horaAlmoco = 1;
+  const horaAlmoco = 1; // 1 hora de almoço em horas
   const diferencaMs = new Date(saida) - new Date(entrada);
-  const diferencaMsComAlmoco = diferencaMs - horaAlmoco * 60 * 60 * 1000; // 1 hora de almoço
-  // Garante que a diferença nunca seja negativa
+  const diferencaMsComAlmoco = diferencaMs - horaAlmoco * 60 * 60 * 1000; 
   const diferencaMsFinal = Math.max(diferencaMsComAlmoco, 0);
-
-  const horas = Math.floor(diferencaMsFinal / (1000 * 60 * 60));
-  const minutos = Math.round(
-    (diferencaMsFinal % (1000 * 60 * 60)) / (1000 * 60)
-  );
-
-  return { horas, minutos };
+  const horasTrabalhadas = diferencaMsFinal / (1000 * 60 * 60); // milissegundos para horas
+  
+  return parseFloat(horasTrabalhadas.toFixed(2)); // Retorna com duas casas decimais
 };
 
 module.exports = {

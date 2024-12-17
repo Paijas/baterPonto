@@ -28,7 +28,7 @@ const registrarCheckin = async (usuarioId, dateAtual) => {
       data: dateAtual,
       entrada: dateAtual,
       saida: null,
-      horasTrabalhadasDia: "0:0",
+      horasTrabalhadasDia: 0,
     },
   });
 };

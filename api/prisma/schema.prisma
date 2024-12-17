@@ -29,7 +29,7 @@ model Presenca {
   data                DateTime
   entrada             DateTime
   saida               DateTime?
-  horasTrabalhadasDia String?
+  horasTrabalhadasDia Float     @default(0)
   usuario             Usuario   @relation(fields: [usuarioId], references: [id])
   @@index([usuarioId, data])
 }
