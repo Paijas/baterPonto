@@ -2,6 +2,8 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import Card from '../components/card'
+import axios from '../../services/axiosConfig'
+
 export default function Home() {
   const [horario, setHorario] = useState("");
   const [registros, setRegistros] = useState([null, null]);
@@ -73,6 +75,8 @@ export default function Home() {
       alert("Segure o botão por 2 segundos para registrar o ponto!");
     }
   };
+
+
 
   return (
     <ScrollView className="flex-1 bg-white">
