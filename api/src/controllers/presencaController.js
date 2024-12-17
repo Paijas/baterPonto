@@ -8,11 +8,10 @@ const horasAmais = 8;
 const minutosAmais = 19;
 // ...............
 const registrarCheckin = async (req, res) => {
-  const usuarioId = parseInt(req.params.id);
+  const usuarioId = req.params.id;
   const dateAtual = horarioDeBrasilia();
-
   try {
-    if (isNaN(usuarioId)) {
+    if (!usuarioId || usuarioId.trim() === "") {
       return res.status(400).json({ message: "ID do usuário inválido" });
     }
 
@@ -48,7 +47,7 @@ const registrarCheckin = async (req, res) => {
 };
 
 const registrarCheckout = async (req, res) => {
-  const usuarioId = parseInt(req.params.id);
+  const usuarioId = req.params.id;
   const dateAtual = horarioDeBrasilia();
 
   // testes
@@ -60,7 +59,7 @@ const registrarCheckout = async (req, res) => {
   );
 
   try {
-    if (isNaN(usuarioId)) {
+    if (!usuarioId || usuarioId.trim() === "") {
       return res.status(400).json({ message: "ID do usuário inválido" });
     }
 
@@ -132,6 +131,10 @@ const getPresencasUserMes = async (req, res) => {
 
   const regex = /^\d{4}-(0[1-9]|1[0-2])$/;
   try {
+    if (!usuarioId || usuarioId.trim() === "") {
+      return res.status(400).json({ message: "ID do usuário inválido" });
+    }
+
     if (!mes || !regex.test(mes)) {
       return res.status(400).json({ message: "Insira uma data válida" });
     }
@@ -142,7 +145,7 @@ const getPresencasUserMes = async (req, res) => {
     }
     
     const relatorio = await presencaModel.getPresencasUserMes(
-      parseInt(usuarioId),
+      usuarioId,
       mes
     );
     res.status(200).json(relatorio);

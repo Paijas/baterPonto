@@ -14,35 +14,31 @@ datasource db {
 }
 
 model Usuario {
-  id        Int        @id @default(autoincrement())
-  login     String     @unique
-  senha     String
-  nome      String
-  tipo      String
-  presencas Presenca[]
-  relatoriosMensais RelatorioMensal[]
+  id                 String            @id @default(uuid())
+  login              String            @unique
+  senha              String
+  nome               String
+  tipo               String
+  presencas          Presenca[]
+  relatoriosMensais  RelatorioMensal[]
 }
 
-
 model Presenca {
-  id                  Int      @id @default(autoincrement())
-  usuarioId           Int
+  id                  Int       @id @default(autoincrement())
+  usuarioId           String
   data                DateTime
   entrada             DateTime
   saida               DateTime?
   horasTrabalhadasDia String?
-  usuario             Usuario  @relation(fields: [usuarioId], references: [id])
-
-  @@index([usuarioId, data]) // Cria um índice para facilitar buscas por usuário e data
+  usuario             Usuario   @relation(fields: [usuarioId], references: [id])
+  @@index([usuarioId, data])
 }
 
-
 model RelatorioMensal {
-  id            Int      @id @default(autoincrement())
-  usuarioId     Int
-  mes           String   // Mês no formato 'YYYY-MM'
-  horasTrabalhadas Float
-  usuario       Usuario @relation(fields: [usuarioId], references: [id])
-
-  @@index([usuarioId, mes]) // Cria um índice para facilitar buscas por usuário e mês
+  id                Int       @id @default(autoincrement())
+  usuarioId         String
+  mes               String
+  horasTrabalhadas  Float
+  usuario           Usuario   @relation(fields: [usuarioId], references: [id])
+  @@index([usuarioId, mes])
 }

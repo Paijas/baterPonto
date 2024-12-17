@@ -66,6 +66,7 @@ const usuarioLogin = async (req, res) => {
 
     const token = jwt.sign(
       {
+        id: existeUser.id,
         tipo: existeUser.tipo,
       },
       process.env.JWT_SECRET,

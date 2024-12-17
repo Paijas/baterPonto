@@ -1,6 +1,6 @@
 -- CreateTable
 CREATE TABLE "Usuario" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "login" TEXT NOT NULL,
     "senha" TEXT NOT NULL,
     "nome" TEXT NOT NULL,
@@ -12,13 +12,11 @@ CREATE TABLE "Usuario" (
 -- CreateTable
 CREATE TABLE "Presenca" (
     "id" SERIAL NOT NULL,
-    "usuarioId" INTEGER NOT NULL,
+    "usuarioId" TEXT NOT NULL,
     "data" TIMESTAMP(3) NOT NULL,
     "entrada" TIMESTAMP(3) NOT NULL,
-    "saida" TIMESTAMP(3) NOT NULL,
-    "almocoSaida" TIMESTAMP(3) NOT NULL,
-    "almocoVolta" TIMESTAMP(3) NOT NULL,
-    "horasTrabalhadasDia" TEXT NOT NULL,
+    "saida" TIMESTAMP(3),
+    "horasTrabalhadasDia" TEXT,
 
     CONSTRAINT "Presenca_pkey" PRIMARY KEY ("id")
 );
@@ -26,7 +24,7 @@ CREATE TABLE "Presenca" (
 -- CreateTable
 CREATE TABLE "RelatorioMensal" (
     "id" SERIAL NOT NULL,
-    "usuarioId" INTEGER NOT NULL,
+    "usuarioId" TEXT NOT NULL,
     "mes" TEXT NOT NULL,
     "horasTrabalhadas" DOUBLE PRECISION NOT NULL,
 
