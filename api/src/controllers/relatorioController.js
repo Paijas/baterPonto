@@ -1,4 +1,4 @@
-const relatorioMensalModel = require("../models/RelatorioMensalModel");
+const relatorioMensalModel = require("../models/relatorioMensalModel");
 const usuarioModel = require("../models/usuarioModel");
 
 const gerarRelatorioMesUser = async (req, res) => {
