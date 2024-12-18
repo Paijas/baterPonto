@@ -79,6 +79,9 @@ const getPresencasUserMes = async (usuarioId, mes) => {
         },
       },
     },
+    orderBy: {
+      data: "asc",
+    }
   });
 
   return presencas;

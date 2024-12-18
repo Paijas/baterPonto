@@ -1,22 +1,9 @@
 
-const relatorioModel = require("./src/models/relatorioMensalModel");
-const userModel = require("./src/models/usuarioModel");
-const presencaModel = require("./src/models/presencaModel");
+const relatorioModel = require("../models/relatorioMensalModel");
+const userModel = require("../models/usuarioModel");
+const presencaModel = require("../models/presencaModel");
 
-function formatarDiaSemana(data) {
-  const diasDaSemana = [
-    'domingo',
-    'segunda-feira',
-    'terça-feira',
-    'quarta-feira',
-    'quinta-feira',
-    'sexta-feira',
-    'sábado'
-  ];
-  const dataSemana = new Date(data);
-  const diaDaSemana = dataSemana.getUTCDay();
-  return diasDaSemana[diaDaSemana];
-}
+
 
 // Gerar Grafico
 const gerarGrafico = async (usuarioId, ano) => {
@@ -26,10 +13,22 @@ const gerarGrafico = async (usuarioId, ano) => {
     ano
   );
 
-  const labels = relatorioAno.relatorioAnual.map((d) =>
-    getMonthNameAndYear(d.mes).monthName
-  );
-  const valores = relatorioAno.relatorioAnual.map((d) => d.horasTrabalhadas);
+  // Lista de todos os meses do ano
+  const mesesDoAno = [
+    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+  ];
+
+  // Mapeia os dados do relatório para um objeto com os meses e horas trabalhadas
+  const horasPorMes = relatorioAno.relatorioAnual.reduce((acc, d) => {
+    const { monthName } = getMonthNameAndYear(d.mes);
+    acc[monthName] = d.horasTrabalhadas;
+    return acc;
+  }, {});
+
+  // Garante que todos os meses do ano estejam presentes, mesmo que sejam 0
+  const labels = mesesDoAno;
+  const valores = labels.map((mes) => horasPorMes[mes] || 0);
 
   const chart = new QuickChart();
   chart.setConfig({
@@ -66,6 +65,7 @@ const gerarGrafico = async (usuarioId, ano) => {
   await chart.toFile("grafico.png");
   console.log("Gráfico salvo com sucesso!");
 };
+
 //...........PDF............
 
 const puppeteer = require("puppeteer");
@@ -82,7 +82,6 @@ async function gerarRelatorioAno(usuarioId, ano) {
     ano
   );
 
-  
   const imgLogo = imageToB64("logo.png")
   const imgGrafico = imageToB64("grafico.png");
 
@@ -117,7 +116,7 @@ async function gerarRelatorioAno(usuarioId, ano) {
       <h1>Relatório de Horas Trabalhadas</h1>
       <div class="employee-info">
         <p><strong>Nome:</strong> ${employeeName}</p>
-        <p><strong>Cargo:</strong> Médico</p>
+        <p><strong>Ano:</strong> ${ano}</p>
       </div>
       <div class="section-title">Gráfico de Horas Trabalhadas</div>
       <div class="image-container image-grafico">
@@ -125,7 +124,7 @@ async function gerarRelatorioAno(usuarioId, ano) {
       </div>
       <div class="section-title">Resumo</div>
       <div class="summary">
-        <p>No ano de <strong>${ano}</strong>, o/a funcionário/a <strong>${employeeName}</strong> trabalhou um total de <strong>${formatHoursToString(
+        <p>No ano de <strong>${ano}</strong>, o/a funcionári(o/a) <strong>${employeeName}</strong> trabalhou um total de <strong>${formatHoursToString(
     relatorioAno.totalHorasAnual
   )}</strong>. Todas as horas foram devidamente registradas e analisadas, conforme o gráfico acima.</p>
         <p>Para mais detalhes, consulte o departamento de RH.</p>
@@ -151,7 +150,7 @@ async function gerarRelatorioAno(usuarioId, ano) {
 
 
 async function gerarRelatorioMes(userId, mes) {
-  const horasNecessarias = 176;
+  const horasNecessarias = 160;
 
   const user = await userModel.buscarUser(userId);
   const presenca = await presencaModel.getPresencasUserMes(userId, mes);
@@ -245,7 +244,6 @@ async function gerarRelatorioMes(userId, mes) {
       <!-- Informações do Funcionário -->
       <div class="employee-info">
         <p><strong>Nome:</strong> ${user.nome}</p>
-        <p><strong>Cargo:</strong> Médico </p>
         <p><strong>Mês:</strong> ${monthName} de ${year}</p>
       </div>
       <!-- Tabela de Presença -->
@@ -296,16 +294,10 @@ async function gerarRelatorioMes(userId, mes) {
 }
 
 // Chama a função
-// gerarRelatorioAno("c474ee1c-e38a-46fc-aac4-98f72aef5377");
 gerarRelatorioMes("c474ee1c-e38a-46fc-aac4-98f72aef5377","2024-12");
 gerarRelatorioAno("c474ee1c-e38a-46fc-aac4-98f72aef5377","2024");
-// (async () => {
-//   try {
-//     await gerarRelatorioAno("c474ee1c-e38a-46fc-aac4-98f72aef5377", "2024");
-//   } catch (error) {
-//     console.error("Erro ao gerar o relatório:", error);
-//   }
-// })();
+//c474ee1c-e38a-46fc-aac4-98f72aef5377
+//1959772e-3425-45d8-8df4-6ef20f518b47
 function formatDateToDDMMYYYY(isoDate) {
   const date = new Date(isoDate); // Converte a string em um objeto Date
   const day = String(date.getUTCDate()).padStart(2, "0");
@@ -330,6 +322,22 @@ function getMonthNameAndYear(dateString) {
   
   return { monthName, year };
 }
+
+function formatarDiaSemana(data) {
+  const diasDaSemana = [
+    'domingo',
+    'segunda-feira',
+    'terça-feira',
+    'quarta-feira',
+    'quinta-feira',
+    'sexta-feira',
+    'sábado'
+  ];
+  const dataSemana = new Date(data);
+  const diaDaSemana = dataSemana.getUTCDay();
+  return diasDaSemana[diaDaSemana];
+}
+
 function imageToB64(imagePath){
   const image = path.resolve(__dirname, imagePath);
   // Converte a imagem para Base64
