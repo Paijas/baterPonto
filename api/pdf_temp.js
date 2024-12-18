@@ -48,7 +48,18 @@ const gerarGrafico = async (usuarioId, ano) => {
     },
     options: {
       responsive: true,
+      plugins: {
+        datalabels: {
+          anchor: "end", // Posiciona o valor acima da barra
+          align: "end", // Alinha o texto no final da barra
+          font: {
+            size: 12,
+          },
+          formatter: (value) => `${value}`, // Formata o valor exibido
+        },
+      },
     },
+    plugins: ["chartjs-plugin-datalabels"], // Inclui o plugin
   });
 
   // Salva o gráfico de forma síncrona
@@ -71,12 +82,10 @@ async function gerarRelatorioAno(usuarioId, ano) {
     ano
   );
 
-  // Caminho absoluto da imagem local
-  const imagePath = path.resolve(__dirname, "grafico.png");
+  
+  const imgLogo = imageToB64("logo.png")
+  const imgGrafico = imageToB64("grafico.png");
 
-  // Converte a imagem para Base64
-  const imageBase64 = fs.readFileSync(imagePath, { encoding: "base64" });
-  const imageDataURI = `data:image/png;base64,${imageBase64}`;
 
   const user = await userModel.buscarUser(usuarioId);
 
@@ -95,20 +104,24 @@ async function gerarRelatorioAno(usuarioId, ano) {
         .employee-info p { margin: 5px 0; }
         .section-title { font-size: 18px; font-weight: bold; color: #004080; margin-top: 30px; margin-bottom: 10px; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
         .image-container { display: flex; justify-content: center; align-items: center; margin: 20px 0; }
-        img { max-width: 500px; height: auto; }
+        .image-logo {img { max-width: 100px; height: auto; }}
+        .image-grafico {img { max-width: 500px; height: auto; }}
         .summary { font-size: 14px; margin-top: 20px; }
         .footer { text-align: center; font-size: 12px; color: #777; margin-top: 40px; }
       </style>
     </head>
     <body>
+      <div class="image-container image-logo">
+        <img src="${imgLogo}" alt="Logo" />
+      </div>
       <h1>Relatório de Horas Trabalhadas</h1>
       <div class="employee-info">
         <p><strong>Nome:</strong> ${employeeName}</p>
         <p><strong>Cargo:</strong> Médico</p>
       </div>
       <div class="section-title">Gráfico de Horas Trabalhadas</div>
-      <div class="image-container">
-        <img src="${imageDataURI}" alt="Gráfico de Horas Trabalhadas" />
+      <div class="image-container image-grafico">
+        <img src="${imgGrafico}" alt="Gráfico de Horas Trabalhadas" />
       </div>
       <div class="section-title">Resumo</div>
       <div class="summary">
@@ -142,6 +155,8 @@ async function gerarRelatorioMes(userId, mes) {
 
   const user = await userModel.buscarUser(userId);
   const presenca = await presencaModel.getPresencasUserMes(userId, mes);
+
+  const imgLogo = imageToB64("logo.png");
 
   if(!user || !presenca){
     console.log("Relatorio presença não encontrado")
@@ -197,6 +212,8 @@ async function gerarRelatorioMes(userId, mes) {
           border-bottom: 1px solid #ccc;
           padding-bottom: 5px;
         }
+        .image-container { display: flex; justify-content: center; align-items: center; margin: 20px 0; }
+        .image-logo {img { max-width: 100px; height: auto; }}
         table {
           width: 100%;
           border-collapse: collapse;
@@ -220,6 +237,9 @@ async function gerarRelatorioMes(userId, mes) {
       </style>
     </head>
     <body>
+    <div class="image-container image-logo">
+      <img src="${imgLogo}" alt="Logo" />
+    </div>
       <h1>Relatório de Presença</h1>
 
       <!-- Informações do Funcionário -->
@@ -228,7 +248,6 @@ async function gerarRelatorioMes(userId, mes) {
         <p><strong>Cargo:</strong> Médico </p>
         <p><strong>Mês:</strong> ${monthName} de ${year}</p>
       </div>
-
       <!-- Tabela de Presença -->
       <div class="section-title">Lista de Presença</div>
       <table>
@@ -306,9 +325,14 @@ function getMonthNameAndYear(dateString) {
     "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
     "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
   ];
-
   const [year, month] = dateString.split("-"); // Divide a string em ano e mês
   const monthName = months[parseInt(month, 10) - 1]; // Converte mês para índice do array
-
+  
   return { monthName, year };
+}
+function imageToB64(imagePath){
+  const image = path.resolve(__dirname, imagePath);
+  // Converte a imagem para Base64
+  const imageBase64 = fs.readFileSync(image, { encoding: "base64" });
+  return `data:image/png;base64,${imageBase64}`;
 }
