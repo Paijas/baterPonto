@@ -5,6 +5,7 @@ const {middlewareAuth} = require("../middleware/auth");
 
 
 router.post("/gerarRelatorio", middlewareAuth(),relatorioController.gerarRelatorioMesUser);
+router.post("/gerarRelatorioAnual", middlewareAuth(), relatorioController.gerarRelatorioAnual);
 router.post("/gerarRelatorioGeral", middlewareAuth(), relatorioController.gerarRelatorioMesGeral);
 
 

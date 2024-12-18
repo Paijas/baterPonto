@@ -1,28 +1,7 @@
-function formatDateToDDMMYYYY(isoDate) {
-  const date = new Date(isoDate); // Converte a string em um objeto Date
-  const day = String(date.getUTCDate()).padStart(2, "0");
-  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-  const year = date.getUTCFullYear();
-  return `${day}/${month}/${year}`;
-}
-function formatHoursToString(hoursFloat) {
-  const hours = Math.floor(hoursFloat); // Parte inteira: horas
-  const minutes = Math.round((hoursFloat - hours) * 60); // Converte o decimal para minutos
-  return `${hours} hora${hours !== 1 ? "s" : ""} e ${minutes} minuto${
-    minutes !== 1 ? "s" : ""
-  }`;
-}
-function getMonthNameAndYear(dateString) {
-  const months = [
-    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
-  ];
 
-  const [year, month] = dateString.split("-"); // Divide a string em ano e mês
-  const monthName = months[parseInt(month, 10) - 1]; // Converte mês para índice do array
-
-  return { monthName, year };
-}
+const relatorioModel = require("./src/models/relatorioMensalModel");
+const userModel = require("./src/models/usuarioModel");
+const presencaModel = require("./src/models/presencaModel");
 
 function formatarDiaSemana(data) {
   const diasDaSemana = [
@@ -40,25 +19,17 @@ function formatarDiaSemana(data) {
 }
 
 // Gerar Grafico
-function gerarGrafico() {
+const gerarGrafico = async (usuarioId, ano) => {
   const QuickChart = require("quickchart-js");
-  const dados = [
-    { mes: "Janeiro", horas_trabalhadas: 160 },
-    { mes: "Fevereiro", horas_trabalhadas: 100 },
-    { mes: "Março", horas_trabalhadas: 170 },
-    { mes: "Abril", horas_trabalhadas: 150 },
-    { mes: "Maio", horas_trabalhadas: 160 },
-    { mes: "Junho", horas_trabalhadas: 140 },
-    { mes: "Julho", horas_trabalhadas: 150 },
-    { mes: "Agosto", horas_trabalhadas: 160 },
-    { mes: "Setembro", horas_trabalhadas: 155 },
-    { mes: "Outubro", horas_trabalhadas: 165 },
-    { mes: "Novembro", horas_trabalhadas: 170 },
-    { mes: "Dezembro", horas_trabalhadas: 180 },
-  ];
+  const relatorioAno = await relatorioModel.gerarRelatorioAnual(
+    usuarioId,
+    ano
+  );
 
-  const labels = dados.map((d) => d.mes);
-  const valores = dados.map((d) => d.horas_trabalhadas);
+  const labels = relatorioAno.relatorioAnual.map((d) =>
+    getMonthNameAndYear(d.mes).monthName
+  );
+  const valores = relatorioAno.relatorioAnual.map((d) => d.horasTrabalhadas);
 
   const chart = new QuickChart();
   chart.setConfig({
@@ -80,20 +51,26 @@ function gerarGrafico() {
     },
   });
 
-  // Salva o gráfico corrigido
-  chart.toFile("grafico.png").then(() => {
-    console.log("Gráfico salvo");
-  });
-}
+  // Salva o gráfico de forma síncrona
+  await chart.toFile("grafico.png");
+  console.log("Gráfico salvo com sucesso!");
+};
 //...........PDF............
 
 const puppeteer = require("puppeteer");
 const fs = require("fs");
 const path = require("path");
-const userModel = require("./src/models/usuarioModel");
-const presencaModel = require("./src/models/presencaModel");
 
-async function gerarRelatorioAno() {
+
+async function gerarRelatorioAno(usuarioId, ano) {
+  // Aguarda a geração do gráfico antes de prosseguir
+  await gerarGrafico(usuarioId, ano);
+
+  const relatorioAno = await relatorioModel.gerarRelatorioAnual(
+    usuarioId,
+    ano
+  );
+
   // Caminho absoluto da imagem local
   const imagePath = path.resolve(__dirname, "grafico.png");
 
@@ -101,109 +78,56 @@ async function gerarRelatorioAno() {
   const imageBase64 = fs.readFileSync(imagePath, { encoding: "base64" });
   const imageDataURI = `data:image/png;base64,${imageBase64}`;
 
-  // Informações do funcionário
-
-  const user = await userModel.buscarUser(
-    "c474ee1c-e38a-46fc-aac4-98f72aef5377"
-  );
+  const user = await userModel.buscarUser(usuarioId);
 
   const employeeName = user.nome;
-  const position = user.tipo;
 
-  // Inicializa o navegador
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
 
-  // Conteúdo HTML do relatório
   const htmlContent = `
   <html>
     <head>
       <style>
-        body { 
-          font-family: Arial, sans-serif; 
-          margin: 40px;
-          color: #333; 
-        }
-        h1 {
-          text-align: center;
-          color: #004080;
-          margin-bottom: 10px;
-        }
-        .employee-info {
-          margin: 20px 0;
-          font-size: 16px;
-          line-height: 1.5;
-        }
-        .employee-info p {
-          margin: 5px 0;
-        }
-        .section-title {
-          font-size: 18px;
-          font-weight: bold;
-          color: #004080;
-          margin-top: 30px;
-          margin-bottom: 10px;
-          border-bottom: 1px solid #ccc;
-          padding-bottom: 5px;
-        }
-        .image-container {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          margin: 20px 0;
-        }
-        img {
-          max-width: 500px;
-          height: auto;
-        }
-        .summary {
-          font-size: 14px;
-          margin-top: 20px;
-        }
-        .footer {
-          text-align: center;
-          font-size: 12px;
-          color: #777;
-          margin-top: 40px;
-        }
+        body { font-family: Arial, sans-serif; margin: 40px; color: #333; }
+        h1 { text-align: center; color: #004080; margin-bottom: 10px; }
+        .employee-info { margin: 20px 0; font-size: 16px; line-height: 1.5; }
+        .employee-info p { margin: 5px 0; }
+        .section-title { font-size: 18px; font-weight: bold; color: #004080; margin-top: 30px; margin-bottom: 10px; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+        .image-container { display: flex; justify-content: center; align-items: center; margin: 20px 0; }
+        img { max-width: 500px; height: auto; }
+        .summary { font-size: 14px; margin-top: 20px; }
+        .footer { text-align: center; font-size: 12px; color: #777; margin-top: 40px; }
       </style>
     </head>
     <body>
       <h1>Relatório de Horas Trabalhadas</h1>
-
-      <!-- Informações do Funcionário -->
       <div class="employee-info">
         <p><strong>Nome:</strong> ${employeeName}</p>
-        <p><strong>Cargo:</strong> ${position}</p>
+        <p><strong>Cargo:</strong> Médico</p>
       </div>
-
-      <!-- Gráfico -->
       <div class="section-title">Gráfico de Horas Trabalhadas</div>
       <div class="image-container">
         <img src="${imageDataURI}" alt="Gráfico de Horas Trabalhadas" />
       </div>
-
-      <!-- Resumo -->
       <div class="section-title">Resumo</div>
       <div class="summary">
-        <p>O funcionário <strong>${employeeName}</strong> trabalhou um total de <strong> 160 </strong>. Todas as horas foram devidamente registradas e analisadas, conforme o gráfico acima.</p>
+        <p>No ano de <strong>${ano}</strong>, o/a funcionário/a <strong>${employeeName}</strong> trabalhou um total de <strong>${formatHoursToString(
+    relatorioAno.totalHorasAnual
+  )}</strong>. Todas as horas foram devidamente registradas e analisadas, conforme o gráfico acima.</p>
         <p>Para mais detalhes, consulte o departamento de RH.</p>
       </div>
-
-      <!-- Rodapé -->
       <div class="footer">
         <p>Relatório gerado automaticamente em ${new Date().toLocaleDateString()}.</p>
       </div>
     </body>
   </html>
-`;
+  `;
 
-  // Define o conteúdo da página
   await page.setContent(htmlContent, { waitUntil: "networkidle0" });
 
-  // Gera o PDF
   await page.pdf({
-    path: "relatorio.pdf",
+    path: "relatorio_anual.pdf",
     format: "A4",
     printBackground: true,
   });
@@ -212,10 +136,17 @@ async function gerarRelatorioAno() {
   console.log("Relatório gerado com sucesso!");
 }
 
-async function gerarRelatorioMes(userId, mes) {
-  const user = await userModel.buscarUser(userId);
-  const presenca = await presencaModel.getPresencasUserMes(user.id, mes);
 
+async function gerarRelatorioMes(userId, mes) {
+  const horasNecessarias = 176;
+
+  const user = await userModel.buscarUser(userId);
+  const presenca = await presencaModel.getPresencasUserMes(userId, mes);
+
+  if(!user || !presenca){
+    console.log("Relatorio presença não encontrado")
+    return 
+  }
   const { monthName, year } = getMonthNameAndYear(mes);
 
   const horas = presenca.map((item) => item.horasTrabalhadasDia);
@@ -294,7 +225,7 @@ async function gerarRelatorioMes(userId, mes) {
       <!-- Informações do Funcionário -->
       <div class="employee-info">
         <p><strong>Nome:</strong> ${user.nome}</p>
-        <p><strong>Cargo:</strong> ${user.tipo}</p>
+        <p><strong>Cargo:</strong> Médico </p>
         <p><strong>Mês:</strong> ${monthName} de ${year}</p>
       </div>
 
@@ -313,8 +244,11 @@ async function gerarRelatorioMes(userId, mes) {
         </tbody>
       </table>
       <div >
-          <p>No mês de <strong>${monthName}</strong> o funcionário <strong>${user.nome}</strong> trabalhou um total de <strong> ${formatHoursToString(totalHoras)}</strong>.</p>
-          <p>${totalHoras > 220 ? "E possui " + formatHoursToString(220 - totalHoras) + " de horas extras" : "E está devendo " + formatHoursToString(220 - totalHoras * -1)}</p>
+        <p>No mês de <strong>${monthName}</strong> o funcionário <strong>${user.nome}</strong> trabalhou um total de <strong> ${formatHoursToString(totalHoras)}</strong>
+              ${totalHoras >= horasNecessarias
+                ? `e possui <strong><span style="color: green;">${formatHoursToString(totalHoras - horasNecessarias)}</span></strong> de horas extras.`
+                : `e está devendo <strong><span style="color: #9e1b24;">${formatHoursToString(horasNecessarias - totalHoras)}</span></strong>.`}
+        </p>
         </div>
       <!-- Rodapé -->
       <div class="footer">
@@ -343,5 +277,38 @@ async function gerarRelatorioMes(userId, mes) {
 }
 
 // Chama a função
-// gerarRelatorioAno();
+// gerarRelatorioAno("c474ee1c-e38a-46fc-aac4-98f72aef5377");
 gerarRelatorioMes("c474ee1c-e38a-46fc-aac4-98f72aef5377","2024-12");
+gerarRelatorioAno("c474ee1c-e38a-46fc-aac4-98f72aef5377","2024");
+// (async () => {
+//   try {
+//     await gerarRelatorioAno("c474ee1c-e38a-46fc-aac4-98f72aef5377", "2024");
+//   } catch (error) {
+//     console.error("Erro ao gerar o relatório:", error);
+//   }
+// })();
+function formatDateToDDMMYYYY(isoDate) {
+  const date = new Date(isoDate); // Converte a string em um objeto Date
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const year = date.getUTCFullYear();
+  return `${day}/${month}/${year}`;
+}
+function formatHoursToString(hoursFloat) {
+  const hours = Math.floor(hoursFloat); // Parte inteira: horas
+  const minutes = Math.round((hoursFloat - hours) * 60); // Converte o decimal para minutos
+  return `${hours} hora${hours !== 1 ? "s" : ""} e ${minutes} minuto${
+    minutes !== 1 ? "s" : ""
+  }`;
+}
+function getMonthNameAndYear(dateString) {
+  const months = [
+    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+  ];
+
+  const [year, month] = dateString.split("-"); // Divide a string em ano e mês
+  const monthName = months[parseInt(month, 10) - 1]; // Converte mês para índice do array
+
+  return { monthName, year };
+}
