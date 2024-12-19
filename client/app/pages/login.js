@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import Logo from "../assets/logo.png";
 import { useNavigation } from "@react-navigation/native";
-import axios from '../../services/axiosConfig'
+import axiosConfig from '../../services/axiosConfig'
 
 export default function Login() {
   const [login, setLogin] = useState("");
@@ -12,8 +12,8 @@ export default function Login() {
 
   const logar = async (user, senha) => {
     try {
-      await axios.post(
-        "http://10.10.1.26:3001/usuario/login",
+      await axiosConfig.post(
+        "/usuario/login",
         {
           login: user,
           senha: senha,
