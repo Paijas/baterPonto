@@ -168,12 +168,15 @@ async function gerarRelatorioMes(userId, mes) {
     (acumulador, valorAtual) => acumulador + valorAtual,
     0
   );
+  console.log(presenca)
   const tableRows = presenca
     .map(
       (item) => `
       <tr>
         <td>${formatDateToDDMMYYYY(item.data)}</td>
         <td>${formatarDiaSemana(item.data)}</td>
+        <td>${item.entrada !== null ? formatDatetoHourMin(item.entrada) : "-"}</td>
+        <td>${item.saida !== null ? formatDatetoHourMin(item.saida) : "-"}</td>
         <td>${ item.horasTrabalhadasDia != 0 ? formatHoursToString(item.horasTrabalhadasDia) : "Não Bateu Ponto de Saída"}</td>
       </tr>`
     )
@@ -253,6 +256,8 @@ async function gerarRelatorioMes(userId, mes) {
           <tr>
             <th>Data</th>
             <th>Dia da Semana</th>
+            <th>Entrada</th>
+            <th>Saída</th>
             <th>Horas Trabalhadas</th>
           </tr>
         </thead>
@@ -311,6 +316,17 @@ function formatHoursToString(hoursFloat) {
   return `${hours} hora${hours !== 1 ? "s" : ""} e ${minutes} minuto${
     minutes !== 1 ? "s" : ""
   }`;
+}
+function formatDatetoHourMin(dataISO){
+   const data = new Date(dataISO);
+   const horas = data.getUTCHours(); 
+   const minutos = data.getUTCMinutes(); 
+ 
+   // Formata para HH:mm
+   const horasFormatadas = horas.toString().padStart(2, "0");
+   const minutosFormatados = minutos.toString().padStart(2, "0");
+ 
+   return `${horasFormatadas}:${minutosFormatados}`;
 }
 function getMonthNameAndYear(dateString) {
   const months = [
