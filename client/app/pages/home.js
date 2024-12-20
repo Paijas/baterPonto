@@ -1,4 +1,4 @@
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import Card from '../components/card'
@@ -27,26 +27,8 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    let timer;
-    if (isPressed) {
-      timer = setInterval(() => {
-        setPressDuration((prev) => prev + 1);
-      }, 100);
-    } else {
-      setPressDuration(0);
-      setButtonColor("bg-blue-400");
-    }
-
-    if (pressDuration >= 10) {
-      setButtonColor("bg-blue-600");
-    }
-
-    return () => clearInterval(timer);
-  }, [isPressed, pressDuration]);
-
   const registraPonto = () => {
-    if (pressDuration >= 10) {
+  
       const indexVazio = registros.findIndex((registro) => registro === null);
 
       if (indexVazio !== -1) {
@@ -69,12 +51,12 @@ export default function Home() {
           setHistorico([...historico, [dataAtual, novosRegistros]]);
           setRegistros([null, null]);
         }
+
+        Alert.alert("Ponto registrado com sucesso!")
       } else {
         alert("Todos os pontos já foram registrados!");
       }
-    } else {
-      alert("Segure o botão por 2 segundos para registrar o ponto!");
-    }
+    
   };
 
 
@@ -110,8 +92,8 @@ export default function Home() {
             Ultimos Registros
           </Text>
           <View className="gap-2 mt-4">
-            {historico.map((registro) => (
-             <Card registro={registro} />
+            {historico.map((registro, index) => (
+             <Card key={index} registro={registro} />
             ))}
           </View>
         </View>
