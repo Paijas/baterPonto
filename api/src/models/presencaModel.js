@@ -28,7 +28,7 @@ const registrarCheckin = async (usuarioId, dateAtual) => {
       data: dateAtual,
       entrada: dateAtual,
       saida: null,
-      horasTrabalhadasDia: "0:0",
+      horasTrabalhadasDia: 0,
     },
   });
 };
@@ -79,16 +79,40 @@ const getPresencasUserMes = async (usuarioId, mes) => {
         },
       },
     },
+    orderBy: {
+      data: "asc",
+    }
   });
 
   return presencas;
 };
 
+const getPresencasUserQuant = async (usuarioId, quantidade) => {
+  const presencas = await prisma.presenca.findMany({
+    where: {
+      usuarioId,
+    },
+    include: {
+      usuario: {
+        select: {
+          nome: true,
+        },
+      },
+    },
+    take: quantidade,
+    orderBy: {
+      data: "asc",
+    }
+  });
+
+  return presencas;
+};
 
 module.exports = {
   registrarCheckin,
   registrarCheckout,
   buscarPresencaDia,
   getPresencasUserMes,
+  getPresencasUserQuant,
   ultimasPresencas,
 };

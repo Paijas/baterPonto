@@ -4,7 +4,8 @@ const presencaController = require("../controllers/presencaController");
 
 const {middlewareAuth} = require("../middleware/auth");
 
-router.get("/ultimaspresencas/:quantidade",middlewareAuth(), presencaController.ultimasPresencas);
+router.get("/ultimaspresencas/:quantidade",middlewareAuth(), presencaController.getUltimasPresencas);
+router.get("/userquantidade",middlewareAuth(), presencaController.getPresencasUserQuant);
 router.get("/user", middlewareAuth(), presencaController.getPresencasUserMes);
 
 

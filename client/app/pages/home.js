@@ -2,7 +2,8 @@ import { Pressable, ScrollView, Text, View, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import Card from '../components/card'
-import axios from '../../services/axiosConfig'
+import axiosConfig from '../../services/axiosConfig'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Home() {
   const [horario, setHorario] = useState("");

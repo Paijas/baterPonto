@@ -8,11 +8,10 @@ const horasAmais = 8;
 const minutosAmais = 19;
 // ...............
 const registrarCheckin = async (req, res) => {
-  const usuarioId = parseInt(req.params.id);
+  const usuarioId = req.params.id;
   const dateAtual = horarioDeBrasilia();
-
   try {
-    if (isNaN(usuarioId)) {
+    if (!usuarioId || usuarioId.trim() === "") {
       return res.status(400).json({ message: "ID do usuário inválido" });
     }
 
@@ -48,7 +47,7 @@ const registrarCheckin = async (req, res) => {
 };
 
 const registrarCheckout = async (req, res) => {
-  const usuarioId = parseInt(req.params.id);
+  const usuarioId = req.params.id;
   const dateAtual = horarioDeBrasilia();
 
   // testes
@@ -60,7 +59,7 @@ const registrarCheckout = async (req, res) => {
   );
 
   try {
-    if (isNaN(usuarioId)) {
+    if (!usuarioId || usuarioId.trim() === "") {
       return res.status(400).json({ message: "ID do usuário inválido" });
     }
 
@@ -89,7 +88,7 @@ const registrarCheckout = async (req, res) => {
     const presenca = await presencaModel.registrarCheckout(
       presencaDia.id,
       dateAtual,
-      `${horasTotais.horas}:${horasTotais.minutos}`
+      horasTotais
     );
 
     return res.status(200).json({ message: "Checkout realizado", presenca });
@@ -101,7 +100,7 @@ const registrarCheckout = async (req, res) => {
   }
 };
 
-const ultimasPresencas = async (req, res) => {
+const getUltimasPresencas = async (req, res) => {
   const quantidade = parseInt(req.params.quantidade);
 
   try {
@@ -114,9 +113,46 @@ const ultimasPresencas = async (req, res) => {
 
     const resposta = await presencaModel.ultimasPresencas(quantidade);
 
-    if (!resposta || resposta.length === 0) {
-      return res.status(404).json({ message: "Nenhuma presença registrada" });
+    return res.status(200).json(resposta);
+  } catch (error) {
+    console.error("Erro ao buscar presenças:", error);
+    return res
+      .status(500)
+      .json({ message: "Erro ao buscar presenças", error: error.message });
+  }
+};
+
+const getPresencasUserQuant = async (req, res) => {
+  const usuarioId = req.body.usuarioId;
+  const quantidade = parseInt(req.body.quantidade);
+
+  if(!usuarioId){
+    return res.status(404).json({ message: "Usuário não selecionado" });
+  }
+
+  if (isNaN(quantidade)) {
+    return res
+      .status(400)
+      .json({ message: "quantidade precisa ser número" });
+  }
+
+  try {
+    if (quantidade > 100) {
+      return res.status(400).json({
+        message:
+          "Quantidade inserida maior que a capacidade permitida para pesquisa",
+      });
     }
+
+    const buscarUser = await usuarioModel.buscarUser(usuarioId);
+    if (!buscarUser) {
+      return res.status(404).json({ message: "Usuário não encontrado" });
+    }
+    
+    const resposta = await presencaModel.getPresencasUserQuant(
+      usuarioId,
+      quantidade
+    );
 
     return res.status(200).json(resposta);
   } catch (error) {
@@ -132,6 +168,10 @@ const getPresencasUserMes = async (req, res) => {
 
   const regex = /^\d{4}-(0[1-9]|1[0-2])$/;
   try {
+    if (!usuarioId || usuarioId.trim() === "") {
+      return res.status(400).json({ message: "ID do usuário inválido" });
+    }
+
     if (!mes || !regex.test(mes)) {
       return res.status(400).json({ message: "Insira uma data válida" });
     }
@@ -140,11 +180,8 @@ const getPresencasUserMes = async (req, res) => {
     if (!buscarUser) {
       return res.status(404).json({ message: "Usuário não encontrado" });
     }
-    
-    const relatorio = await presencaModel.getPresencasUserMes(
-      parseInt(usuarioId),
-      mes
-    );
+
+    const relatorio = await presencaModel.getPresencasUserMes(usuarioId, mes);
     res.status(200).json(relatorio);
   } catch (error) {
     console.error(error);
@@ -170,23 +207,19 @@ const horarioDeBrasilia = () => {
 };
 
 const calcularHorasTrabalhadas = (entrada, saida) => {
-  const horaAlmoco = 1;
+  const horaAlmoco = 1; // 1 hora de almoço em horas
   const diferencaMs = new Date(saida) - new Date(entrada);
-  const diferencaMsComAlmoco = diferencaMs - horaAlmoco * 60 * 60 * 1000; // 1 hora de almoço
-  // Garante que a diferença nunca seja negativa
+  const diferencaMsComAlmoco = diferencaMs - horaAlmoco * 60 * 60 * 1000;
   const diferencaMsFinal = Math.max(diferencaMsComAlmoco, 0);
+  const horasTrabalhadas = diferencaMsFinal / (1000 * 60 * 60); // milissegundos para horas
 
-  const horas = Math.floor(diferencaMsFinal / (1000 * 60 * 60));
-  const minutos = Math.round(
-    (diferencaMsFinal % (1000 * 60 * 60)) / (1000 * 60)
-  );
-
-  return { horas, minutos };
+  return parseFloat(horasTrabalhadas.toFixed(2)); // Retorna com duas casas decimais
 };
 
 module.exports = {
   registrarCheckin,
   registrarCheckout,
-  ultimasPresencas,
+  getUltimasPresencas,
+  getPresencasUserQuant,
   getPresencasUserMes,
 };

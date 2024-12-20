@@ -147,10 +147,43 @@ const gerarRelatorioMesGeral = async (mes) => {
   return relatorios;
 };
 
+const gerarRelatorioAnual = async (usuarioId, ano) => {
+  // Buscar relatórios mensais ordenados
+  const relatoriosMensais = await prisma.relatorioMensal.findMany({
+    where: {
+      usuarioId: usuarioId,
+      mes: {
+        startsWith: ano, 
+      },
+    },
+    orderBy: {
+      mes: "asc",
+    },
+  });
 
+  // Processar os relatórios mensais em uma única passagem
+  const relatorioAnual = [];
+  let totalHorasAnual = 0;
 
+  relatoriosMensais.forEach((relatorio) => {
+    relatorioAnual.push({
+      mes: relatorio.mes,
+      horasTrabalhadas: relatorio.horasTrabalhadas,
+    });
+    totalHorasAnual += relatorio.horasTrabalhadas;
+  });
+
+  // Retornar o resultado formatado
+  return {
+    usuarioId,
+    ano,
+    relatorioAnual,
+    totalHorasAnual,
+  };
+};
 
 module.exports = {
   gerarRelatorioMesUser,
   gerarRelatorioMesGeral,
+  gerarRelatorioAnual
 };
