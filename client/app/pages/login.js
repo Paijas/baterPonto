@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import Logo from "../assets/logo.png";
 import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import axiosConfig from '../../services/axiosConfig'
 
 export default function Login() {
@@ -12,13 +13,15 @@ export default function Login() {
 
   const logar = async (user, senha) => {
     try {
-      await axiosConfig.post(
+      const response = await axiosConfig.post(
         "/usuario/login",
         {
           login: user,
           senha: senha,
         }
       );
+      await AsyncStorage.setItem("token",response.data);
+
       navigation.navigate("Home");
     } catch (error) {
       console.log(error); 
