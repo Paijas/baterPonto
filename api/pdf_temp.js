@@ -3,16 +3,11 @@ const relatorioModel = require("./src/models/relatorioMensalModel");
 const userModel = require("./src/models/usuarioModel");
 const presencaModel = require("./src/models/presencaModel");
 
-
-
 // Gerar Grafico
-const gerarGrafico = async (usuarioId, ano) => {
+const gerarGrafico = async (relatorioAno) => {
   const QuickChart = require("quickchart-js");
-  const relatorioAno = await relatorioModel.gerarRelatorioAnual(
-    usuarioId,
-    ano
-  );
 
+  console.log(relatorioAno);
   // Lista de todos os meses do ano
   const mesesDoAno = [
     "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -71,18 +66,17 @@ const gerarGrafico = async (usuarioId, ano) => {
 const puppeteer = require("puppeteer");
 const fs = require("fs");
 const path = require("path");
+const imgLogo = imageToB64("logo.png")
 
 
 async function gerarRelatorioAno(usuarioId, ano) {
   // Aguarda a geração do gráfico antes de prosseguir
-  await gerarGrafico(usuarioId, ano);
-
   const relatorioAno = await relatorioModel.gerarRelatorioAnual(
     usuarioId,
     ano
   );
+  await gerarGrafico(relatorioAno);
 
-  const imgLogo = imageToB64("logo.png")
   const imgGrafico = imageToB64("grafico.png");
 
 
@@ -154,8 +148,6 @@ async function gerarRelatorioMes(userId, mes) {
 
   const user = await userModel.buscarUser(userId);
   const presenca = await presencaModel.getPresencasUserMes(userId, mes);
-
-  const imgLogo = imageToB64("logo.png");
 
   if(!user || !presenca){
     console.log("Relatorio presença não encontrado")
