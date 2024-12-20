@@ -87,11 +87,32 @@ const getPresencasUserMes = async (usuarioId, mes) => {
   return presencas;
 };
 
+const getPresencasUserQuant = async (usuarioId, quantidade) => {
+  const presencas = await prisma.presenca.findMany({
+    where: {
+      usuarioId,
+    },
+    include: {
+      usuario: {
+        select: {
+          nome: true,
+        },
+      },
+    },
+    take: quantidade,
+    orderBy: {
+      data: "asc",
+    }
+  });
+
+  return presencas;
+};
 
 module.exports = {
   registrarCheckin,
   registrarCheckout,
   buscarPresencaDia,
   getPresencasUserMes,
+  getPresencasUserQuant,
   ultimasPresencas,
 };

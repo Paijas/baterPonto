@@ -13,6 +13,16 @@ const buscarUser = async (id) => {
   });
 };
 
+const getAllUsers = async () => {
+  return await prisma.usuario.findMany({
+    select:{
+      id: true,
+      nome: true,
+      tipo: true,
+    }
+  });
+};
+
 const createUser = async (login, senha, nome, tipo) => {
   return await prisma.usuario.create({ 
     data:{
@@ -24,4 +34,4 @@ const createUser = async (login, senha, nome, tipo) => {
   });
 };
 
-module.exports = { createUser, buscarUser, existeUser };
+module.exports = { createUser, getAllUsers, buscarUser, existeUser };
