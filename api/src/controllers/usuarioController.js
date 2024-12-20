@@ -73,18 +73,34 @@ const usuarioLogin = async (req, res) => {
       { expiresIn: "24h" }
     );
 
-    res.status(200).json( token );
+    res.status(200).json(token);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Erro ao logar", error });
   }
 };
 
-const getAllUsers = async (req,res) =>{
+const getUser = async (req, res) => {
+  const usuarioId = req.params.id;
+
+  if (!isNaN(usuarioId) || !usuarioId) {
+    return res.status(400).json({ message: "ID de Usuário Inválido" });
+  }
+
+  try {
+    const usuario = await usuarioModel.buscarUser(usuarioId);
+    return res.status(200).json(usuario);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Erro ao buscar usuário", error });
+  }
+};
+
+const getAllUsers = async (req, res) => {
   try {
     const users = await usuarioModel.getAllUsers();
-    if (!users){
-      return res.status(404).json({message: "Nenhum usuário encontrado"});
+    if (!users) {
+      return res.status(404).json({ message: "Nenhum usuário encontrado" });
     }
 
     return res.status(200).json(users);
@@ -92,7 +108,6 @@ const getAllUsers = async (req,res) =>{
     console.error(error);
     return res.status(500).json({ message: "Erro ao buscar usuários", error });
   }
-  
-}
+};
 
-module.exports = { criarUsuario, usuarioLogin, getAllUsers };
+module.exports = { criarUsuario, usuarioLogin, getAllUsers, getUser };

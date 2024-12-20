@@ -3,13 +3,23 @@ const prisma = new PrismaClient();
 
 const existeUser = async (login) =>{
   return await prisma.usuario.findFirst({
-    where: {login: login}
+    where: {login: login},
+    select:{
+      id: true,
+      nome: true,
+      tipo: true,
+    },
   })
 }
 
 const buscarUser = async (id) => {
   return await prisma.usuario.findUnique({
     where: { id: id },
+    select:{
+      id: true,
+      nome: true,
+      tipo: true,
+    },
   });
 };
 

@@ -1,7 +1,7 @@
 
-const relatorioModel = require("../models/relatorioMensalModel");
-const userModel = require("../models/usuarioModel");
-const presencaModel = require("../models/presencaModel");
+const relatorioModel = require("./src/models/relatorioMensalModel");
+const userModel = require("./src/models/usuarioModel");
+const presencaModel = require("./src/models/presencaModel");
 
 
 
